@@ -1,0 +1,15 @@
+# Virtual environment
+astro/
+
+# Satellite data cache (regenerated on run)
+data/
+
+# Generated plots
+plots/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.Zone.Identifier

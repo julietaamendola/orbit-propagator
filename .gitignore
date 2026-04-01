@@ -1,0 +1,20 @@
+# Virtual environment
+astro/
+venv/
+
+# Satellite data cache
+data/
+
+# Generated plots
+plots/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.Zone.Identifier
+
+# WIP files
+viewer-wip/
+export_catalog_wip.py

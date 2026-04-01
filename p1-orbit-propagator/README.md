@@ -2,7 +2,7 @@
 
 Satellite orbit propagation from live TLE data, with a custom RK4 integrator built from the equations of motion.
 
-![Ground tracks](plots/ground_tracks.png)
+![Ground tracks](assets/ground_tracks.png)
 
 ## What it does
 

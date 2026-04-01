@@ -35,61 +35,6 @@ _ATMO_LAYERS = [
     (1000, 3.019e-16,  5.40),
 ]
 
-def compute_raan_over_time(omm, t_start, duration_hours, dt_seconds=60.0):
-    """
-    Computes true RAAN over time.
-    Uses sgp4 for r,v in TEME, then rotates to GCRS using Skyfield's
-    precession/nutation matrices for correct RAAN calculation.
-    Returns t_hours, raan_deg arrays.
-    """
-    from sgp4.api import Satrec, jday
-    from sgp4 import omm as sgp4_omm
-    from skyfield.api import load
-    from skyfield.positionlib import ITRF_to_GCRS2
-
-    ts  = load.timescale()
-    sat = Satrec()
-    sgp4_omm.initialize(sat, omm)
-
-    t_hours_list, raans = [], []
-    t     = t_start
-    hours = 0.0
-    Z     = np.array([0.0, 0.0, 1.0])
-
-    while hours <= duration_hours:
-        jd, fr = jday(t.year, t.month, t.day, t.hour, t.minute,
-                      t.second + t.microsecond / 1e6)
-        e, r_teme, v_teme = sat.sgp4(jd, fr)
-
-        if e == 0:
-            r = np.array(r_teme)
-            v = np.array(v_teme)
-
-            # Rotate TEME -> GCRS using Skyfield's time object
-            # which has full precession/nutation corrections
-            skyfield_t = ts.from_datetime(t)
-            # Get the TEME->GCRS rotation matrix
-            # Skyfield's EarthSatellite internally uses:
-            # r_gcrs = skyfield_t.M @ r_teme  (where M is the rotation matrix)
-            # We access it via the _time object internals
-            r_gcrs = skyfield_t.M.T @ r
-            v_gcrs = skyfield_t.M.T @ v
-
-            # Compute RAAN from r_gcrs, v_gcrs in GCRS (inertial frame)
-            h = np.cross(r_gcrs, v_gcrs)
-            N = np.cross(Z, h)
-            N_norm = np.linalg.norm(N)
-
-            if N_norm > 1e-10:
-                N_hat = N / N_norm
-                raan  = np.degrees(np.arctan2(N_hat[1], N_hat[0]))
-                raans.append(raan)
-                t_hours_list.append(hours)
-
-        t     += timedelta(seconds=dt_seconds)
-        hours += dt_seconds / 3600
-
-    return np.array(t_hours_list), np.array(raans)
 
 # ── SGP4 ──────────────────────────────────────────────────────────────────────
 

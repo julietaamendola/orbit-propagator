@@ -139,52 +139,20 @@ def _plot_ground_track_simple(tracks, save_path=None):
     plt.show()
 
 
-def plot_orbital_elements_evolution(omm, t_start, positions_km,
-                                    title="Orbital elements evolution"):
+def plot_orbital_elements_evolution(positions_km, title="Orbital elements evolution"):
     """
-    Shows altitude oscillation and RAAN precession over time.
-    RAAN computed via Skyfield osculating elements in ICRF frame.
+    Shows altitude oscillation over time.
     """
-    from src.propagator import compute_raan_over_time
-    t_hours_raan, raans = compute_raan_over_time(omm, t_start, duration_hours=24)
-
     r_norms   = np.linalg.norm(positions_km, axis=1)
     altitudes = r_norms - 6371
     t_hours   = np.arange(len(altitudes)) / 60
 
-    raans_unwrap = np.degrees(np.unwrap(np.radians(raans)))
-    coeffs       = np.polyfit(t_hours_raan, raans_unwrap, 1)
-    rate         = coeffs[0] * 24   # deg/hour -> deg/day
-    trend        = np.polyval(coeffs, t_hours_raan)
-    residual     = raans_unwrap - trend
-
-    fig, axes = plt.subplots(1, 3, figsize=(16, 4))
-
-    axes[0].plot(t_hours, altitudes, color="#1D9E75", linewidth=1.2)
-    axes[0].set_xlabel("Time [hours]")
-    axes[0].set_ylabel("Altitude [km]")
-    axes[0].set_title("Altitude oscillation")
-    axes[0].grid(alpha=0.3)
-
-    axes[1].plot(t_hours_raan, raans_unwrap, color="#378ADD",
-                 linewidth=1.0, alpha=0.8, label="RAAN (unwrapped)")
-    axes[1].plot(t_hours_raan, trend, color="#E8593C",
-                 linewidth=1.5, linestyle="--",
-                 label=f"Trend: {rate:.2f} °/day")
-    axes[1].set_xlabel("Time [hours]")
-    axes[1].set_ylabel("RAAN [deg]")
-    axes[1].set_title("Ascending node precession (J2)")
-    axes[1].legend(fontsize=9)
-    axes[1].grid(alpha=0.3)
-
-    axes[2].plot(t_hours_raan, residual, color="#7F77DD", linewidth=0.8)
-    axes[2].set_xlabel("Time [hours]")
-    axes[2].set_ylabel("RAAN residual [deg]")
-    axes[2].set_title("Short-period oscillation (residual)")
-    axes[2].axhline(0, color="#aaaaaa", linewidth=0.5)
-    axes[2].grid(alpha=0.3)
-
-    fig.suptitle(title, fontsize=12)
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.plot(t_hours, altitudes, color="#1D9E75", linewidth=1.2)
+    ax.set_xlabel("Time [hours]")
+    ax.set_ylabel("Altitude [km]")
+    ax.set_title(title)
+    ax.grid(alpha=0.3)
     plt.tight_layout()
     plt.show()
 
